@@ -179,6 +179,7 @@ const {
   updateGiftCard,
   deleteGiftCard,
 } = require("../controllers/admin/giftCard/giftCard");
+const { createAstrologerSchedule, getAllAstrologerSchedules, getAstrologerSchedule, updateAstrologerSchedule, deleteAstrologerSchedule } = require("../controllers/admin/astrologerSchedule/astrologerSchedule");
 
 const router = express.Router();
 
@@ -560,5 +561,17 @@ router
     updateGiftCard
   )
   .delete(deleteGiftCard);
+
+//astrologer Schedule
+router
+  .route("/astrologerSchedule")
+  .post(createAstrologerSchedule)
+  .get(getAllAstrologerSchedules);
+
+router
+  .route("/astrologerSchedule/:id")
+  .get(getAstrologerSchedule)
+  .patch(updateAstrologerSchedule)
+  .delete(deleteAstrologerSchedule);
 
 module.exports = router;

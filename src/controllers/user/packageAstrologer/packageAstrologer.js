@@ -29,9 +29,13 @@ exports.getAllPackageAstrologers = catchAsync(async (req, res, next) => {
       path: "consultationPackage",
       match: search ? { name: { $regex: search, $options: "i" } } : {},
     })
-    .populate({
+    .populate({ 
       path: "astrologer",
       match: search ? { name: { $regex: search, $options: "i" } } : {},
+      populate: {
+        path: "speciality", // Populates speciality inside astrologer
+        model: "Speciality",
+      },
     })
     .sort({ createdAt: -1 })
     .skip(skip)
