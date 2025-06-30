@@ -5,10 +5,14 @@ const AstrologerSchedule = require("../../../models/astrologerSchedule");
 moment.tz.setDefault("Asia/Kolkata");
 
 exports.getAllAstrologerSchedules = catchAsync(async (req, res, next) => {
-  const { search, consultationPackage, astrologer } = req.query;
+  const { search, consultationPackage, astrologer, marriagePackage } = req.query;
 
   // Get current date and time in Asia/Kolkata
-  const now = moment();
+  const now = moment().tz("Asia/Kolkata");
+
+  // Convert to UTC for MongoDB date comparison
+  const startOfDayUTC = now.clone().startOf("day").utc().toDate();
+  const endOfDayUTC = now.clone().endOf("day").utc().toDate();
 
   let query = {
     $or: [
@@ -17,8 +21,8 @@ exports.getAllAstrologerSchedules = catchAsync(async (req, res, next) => {
       },
       {
         date: {
-          $gte: now.startOf("day").toDate(),
-          $lte: now.endOf("day").toDate(),
+          $gte: startOfDayUTC,
+          $lte: endOfDayUTC,
         },
         endTime: {
           $gte: now.format("HH:mm"),
@@ -47,6 +51,9 @@ exports.getAllAstrologerSchedules = catchAsync(async (req, res, next) => {
 
   if (astrologer) query.astrologer = astrologer;
   if (consultationPackage) query.consultationPackage = consultationPackage;
+  if (marriagePackage) query.marriagePackage = marriagePackage;
+
+  console.log("Query:", JSON.stringify(query, null, 2)); // Debug the query
 
   const schedules = await AstrologerSchedule.find(query).sort({
     date: 1,
@@ -55,7 +62,6 @@ exports.getAllAstrologerSchedules = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: true,
-
     message: "Astrologer schedules fetched successfully",
     data: schedules,
   });

@@ -17,6 +17,7 @@ const isEndTimeAfterStartTime = (startTime, endTime, date) => {
 exports.createAstrologerSchedule = catchAsync(async (req, res, next) => {
   const {
     consultationPackage,
+    marriagePackage,
     astrologer,
     date,
     startTime,
@@ -25,12 +26,9 @@ exports.createAstrologerSchedule = catchAsync(async (req, res, next) => {
   } = req.body;
 
   // Validate required fields
-  if (!consultationPackage || !astrologer || !date || !startTime || !endTime) {
+  if (!astrologer || !date || !startTime || !endTime) {
     return next(
-      new AppError(
-        "ConsultationPackage, astrologer, date, startTime, and endTime are required",
-        400
-      )
+      new AppError("astrologer, date, startTime, and endTime are required", 400)
     );
   }
 
@@ -49,14 +47,22 @@ exports.createAstrologerSchedule = catchAsync(async (req, res, next) => {
     return next(new AppError("endTime must be after startTime", 400));
   }
 
-  // Check for duplicate schedule
-  const existingSchedule = await AstrologerSchedule.findOne({
-    consultationPackage,
+  const obj = {
     astrologer,
     date: new Date(date).setHours(0, 0, 0, 0),
     startTime,
     endTime,
-  });
+  };
+
+  if (consultationPackage) {
+    obj.consultationPackage = consultationPackage;
+  }
+  if (marriagePackage) {
+    obj.marriagePackage = marriagePackage;
+  }
+
+  // Check for duplicate schedule
+  const existingSchedule = await AstrologerSchedule.findOne(obj);
   if (existingSchedule) {
     return next(
       new AppError(
@@ -67,13 +73,18 @@ exports.createAstrologerSchedule = catchAsync(async (req, res, next) => {
   }
 
   const scheduleData = {
-    consultationPackage,
     astrologer,
     date: new Date(date),
     startTime,
     endTime,
     isAvailable: isAvailable !== undefined ? isAvailable : true,
   };
+  if (consultationPackage) {
+    scheduleData.consultationPackage = consultationPackage;
+  }
+  if (marriagePackage) {
+    scheduleData.marriagePackage = marriagePackage;
+  }
 
   try {
     const newSchedule = await AstrologerSchedule.create(scheduleData);
@@ -97,6 +108,7 @@ exports.getAllAstrologerSchedules = catchAsync(async (req, res, next) => {
     page: currentPage,
     limit: currentLimit,
     consultationPackage,
+    marriagePackage,
     astrologer,
   } = req.query;
 
@@ -115,6 +127,7 @@ exports.getAllAstrologerSchedules = catchAsync(async (req, res, next) => {
 
   if (astrologer) query.astrologer = astrologer;
   if (consultationPackage) query.consultationPackage = consultationPackage;
+  if (marriagePackage) query.marriagePackage = marriagePackage;
 
   const { limit, skip, totalResult, totalPage } = await pagination(
     currentPage,
@@ -157,6 +170,7 @@ exports.getAstrologerSchedule = catchAsync(async (req, res, next) => {
 exports.updateAstrologerSchedule = catchAsync(async (req, res, next) => {
   const {
     consultationPackage,
+    marriagePackage,
     astrologer,
     date,
     startTime,
@@ -194,9 +208,11 @@ exports.updateAstrologerSchedule = catchAsync(async (req, res, next) => {
   }
 
   // Check for duplicate schedule if updating relevant fields
-  if (consultationPackage || astrologer || date || startTime || endTime) {
+  if (consultationPackage || marriagePackage || astrologer || date || startTime || endTime) {
     const checkConsultationPackage =
       consultationPackage || schedule.consultationPackage;
+    const checkMarriagePackage =
+      marriagePackage || schedule.marriagePackage;
     const checkAstrologer = astrologer || schedule.astrologer;
     const checkDate = date
       ? new Date(date).setHours(0, 0, 0, 0)
@@ -206,6 +222,7 @@ exports.updateAstrologerSchedule = catchAsync(async (req, res, next) => {
 
     const existingSchedule = await AstrologerSchedule.findOne({
       consultationPackage: checkConsultationPackage,
+      marriagePackage: checkMarriagePackage,
       astrologer: checkAstrologer,
       date: checkDate,
       startTime: checkStartTime,
@@ -227,6 +244,8 @@ exports.updateAstrologerSchedule = catchAsync(async (req, res, next) => {
 
   if (consultationPackage)
     scheduleData.consultationPackage = consultationPackage;
+  if (marriagePackage)
+    scheduleData.marriagePackage = marriagePackage;
   if (astrologer) scheduleData.astrologer = astrologer;
   if (date) scheduleData.date = new Date(date);
   if (startTime) scheduleData.startTime = startTime;

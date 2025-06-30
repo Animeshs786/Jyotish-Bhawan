@@ -120,9 +120,51 @@ const {
   getAllBannerTransaction,
   getBannerTransaction,
 } = require("../controllers/user/bannerTransaction/bannerTransaction");
-const { getAllConsultationPackages, getConsultationPackage } = require("../controllers/user/consultationPackage/consultationPackage");
-const { getAllPackageAstrologers } = require("../controllers/user/packageAstrologer/packageAstrologer");
-const { getAllGiftCards, sendGiftCard } = require("../controllers/user/giftCard/giftCard");
+const {
+  getAllConsultationPackages,
+  getConsultationPackage,
+  checkConsultationSubscription,
+} = require("../controllers/user/consultationPackage/consultationPackage");
+const {
+  getAllPackageAstrologers,
+} = require("../controllers/user/packageAstrologer/packageAstrologer");
+const {
+  getAllGiftCards,
+  sendGiftCard,
+} = require("../controllers/user/giftCard/giftCard");
+const {
+  getAllAstrologerSchedules,
+} = require("../controllers/user/astrologerSchedule/astrologerSchedule");
+const {
+  createConsultationTransaction,
+  getAllConsultationTransactions,
+  getConsultationTransaction,
+} = require("../controllers/user/consultationTransaction/consultationTransaction");
+const {
+  createConsultationRequest,
+} = require("../controllers/user/consultationRequest/consultationRequest");
+const {
+  getAllGroupSchedules,
+} = require("../controllers/user/groupConsultSchedule/groupConsultSchedule");
+const {
+  getGroupConsultationTransaction,
+  getAllGroupConsultationTransactions,
+  createGroupConsultationTransaction,
+} = require("../controllers/user/groupConsultTransaction/groupConsultTransaction");
+const {
+  getAllMarriagePackages,
+  getMarriagePackage,
+  checkMarriageSubscription,
+} = require("../controllers/user/marriagePackage/consultationPackage");
+const {
+  getAllMarriagePackageAstrologers,
+} = require("../controllers/user/marriagePackageAstrologer/marriagePackageAstrologer");
+const {
+  getMarriageTransaction,
+  getAllMarriageTransactions,
+  createMarriageTransaction,
+} = require("../controllers/user/marriageTransaction/marriageTransaction");
+const { createMarriageRequest } = require("../controllers/user/marriageRequest/marriageRequest");
 
 const router = express.Router();
 
@@ -281,17 +323,88 @@ router
   .route("/bannerTransaction/:id")
   .get(userAuthenticate, getBannerTransaction);
 
+//consultation package
+router.get("/consultationPackage", getAllConsultationPackages);
+router.get("/consultationPackage/:id", getConsultationPackage);
 
-  //consultation package
-  router.get("/consultationPackage", getAllConsultationPackages);
-  router.get("/consultationPackage/:id", getConsultationPackage);
+//package astrologer
+router.get("/packageAstrologer", getAllPackageAstrologers);
 
+//gift
+router.get("/giftCard", getAllGiftCards);
+router.post("/sentGiftCard", userAuthenticate, sendGiftCard);
 
-  //package astrologer
-  router.get("/packageAstrologer", getAllPackageAstrologers);
+//astrologer schedule
+router.get("/astrologerSchedule", getAllAstrologerSchedules);
 
-  //gift
-  router.get("/giftCard", getAllGiftCards);
-  router.post("/sentGiftCard", userAuthenticate,sendGiftCard);
+router.get("/groupConsultSchedule", getAllGroupSchedules);
 
+//consultation Transaction
+router
+  .route("/consultationTransaction")
+  .post(userAuthenticate, createConsultationTransaction)
+  .get(userAuthenticate, getAllConsultationTransactions);
+
+router.get(
+  "/consultationTransaction/:id",
+  userAuthenticate,
+  getConsultationTransaction
+);
+
+//group consultation transaction
+router
+  .route("/groupConsultationTransaction")
+  .post(userAuthenticate, createGroupConsultationTransaction)
+  .get(userAuthenticate, getAllGroupConsultationTransactions);
+
+router.get(
+  "/groupConsultationTransaction/:id",
+  userAuthenticate,
+  getGroupConsultationTransaction
+);
+
+//consultation request
+router.post(
+  "/consultationRequest",
+  userAuthenticate,
+  createConsultationRequest
+);
+
+router.post(
+  "/consultationSubscription",
+  userAuthenticate,
+  checkConsultationSubscription
+);
+
+// Marriage Package Routes
+router.get("/marriagePackage", getAllMarriagePackages);
+router.get("/marriagePackage/:id", getMarriagePackage);
+
+//marriage package astrologer
+router.get("/marriagePackageAstrologer", getAllMarriagePackageAstrologers);
+
+//marriage Transaction
+router
+  .route("/marriageTransaction")
+  .post(userAuthenticate, createMarriageTransaction)
+  .get(userAuthenticate, getAllMarriageTransactions);
+
+router.get(
+  "/marriageTransaction/:id",
+  userAuthenticate,
+  getMarriageTransaction
+);
+
+//marriage request
+router.post(
+  "/marriageRequest",
+  userAuthenticate,
+  createMarriageRequest
+);
+
+router.post(
+  "/marriageSubscription",
+  userAuthenticate,
+  checkMarriageSubscription
+);
 module.exports = router;

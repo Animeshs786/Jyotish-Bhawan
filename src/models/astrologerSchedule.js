@@ -4,7 +4,10 @@ const astrologerScheduleSchema = new mongoose.Schema({
   consultationPackage: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "ConsultationPackage",
-    required: true,
+  },
+  marriagePackage: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "MarriagePackage",
   },
   astrologer: {
     type: mongoose.Schema.Types.ObjectId,

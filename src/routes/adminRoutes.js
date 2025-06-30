@@ -179,7 +179,34 @@ const {
   updateGiftCard,
   deleteGiftCard,
 } = require("../controllers/admin/giftCard/giftCard");
-const { createAstrologerSchedule, getAllAstrologerSchedules, getAstrologerSchedule, updateAstrologerSchedule, deleteAstrologerSchedule } = require("../controllers/admin/astrologerSchedule/astrologerSchedule");
+const {
+  createAstrologerSchedule,
+  getAllAstrologerSchedules,
+  getAstrologerSchedule,
+  updateAstrologerSchedule,
+  deleteAstrologerSchedule,
+} = require("../controllers/admin/astrologerSchedule/astrologerSchedule");
+const {
+  createGroupConsultSchedule,
+  getAllGroupConsultSchedules,
+  getGroupConsultSchedule,
+  updateGroupConsultSchedule,
+  deleteGroupConsultSchedule,
+} = require("../controllers/admin/GroupConsultSchedule/groupConsultSchedule");
+const {
+  deleteMarriagePackage,
+  updateMarriagePackage,
+  getMarriagePackage,
+  getAllMarriagePackages,
+  createMarriagePackage,
+} = require("../controllers/admin/marriagePackage/marriagePackage");
+const {
+  createMarriagePackageAstrologer,
+  getAllMarriagePackageAstrologers,
+  getMarriagePackageAstrologer,
+  updateMarriagePackageAstrologer,
+  deleteMarriagePackageAstrologer,
+} = require("../controllers/admin/marriagePackageAstrologer/marriagePackageAstrologer");
 
 const router = express.Router();
 
@@ -573,5 +600,59 @@ router
   .get(getAstrologerSchedule)
   .patch(updateAstrologerSchedule)
   .delete(deleteAstrologerSchedule);
+
+//group consult  Schedule
+router
+  .route("/groupConsultSchedule")
+  .post(createGroupConsultSchedule)
+  .get(getAllGroupConsultSchedules);
+
+router
+  .route("/groupConsultSchedule/:id")
+  .get(getGroupConsultSchedule)
+  .patch(updateGroupConsultSchedule)
+  .delete(deleteGroupConsultSchedule);
+
+//marriage package
+router
+  .route("/marriagePackage")
+  .post(
+    fileUploader(
+      [
+        { name: "thumbImage", maxCount: 1 },
+        { name: "image", maxCount: 1 },
+      ],
+      "MarriagePackage"
+    ),
+    createMarriagePackage
+  )
+  .get(getAllMarriagePackages);
+
+router
+  .route("/marriagePackage/:id")
+  .get(getMarriagePackage)
+  .patch(
+    fileUploader(
+      [
+        { name: "thumbImage", maxCount: 1 },
+        { name: "image", maxCount: 1 },
+      ],
+      "MarriagePackage"
+    ),
+    updateMarriagePackage
+  )
+  .delete(deleteMarriagePackage);
+
+//marriage package astrologer
+router
+  .route("/marriagePackageAstrologer")
+  .post(createMarriagePackageAstrologer)
+  .get(getAllMarriagePackageAstrologers);
+
+router
+  .route("/marriagePackageAstrologer/:id")
+  .get(getMarriagePackageAstrologer)
+  .patch(updateMarriagePackageAstrologer)
+  .delete(deleteMarriagePackageAstrologer);
 
 module.exports = router;

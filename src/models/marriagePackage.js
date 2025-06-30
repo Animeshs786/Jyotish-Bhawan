@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
-const { image } = require("pdfkit");
 
-const consultationPackageSchema = new mongoose.Schema({
+const marriagePackageSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
@@ -48,9 +47,8 @@ const consultationPackageSchema = new mongoose.Schema({
     default: Date.now,
   },
 });
-
-const ConsultationPackage = mongoose.model(
-  "ConsultationPackage",
-  consultationPackageSchema
+const MarriagePackage = mongoose.model(
+  "MarriagePackage",
+  marriagePackageSchema
 );
-module.exports = ConsultationPackage;
+module.exports = MarriagePackage;
