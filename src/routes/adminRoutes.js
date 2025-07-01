@@ -207,6 +207,26 @@ const {
   updateMarriagePackageAstrologer,
   deleteMarriagePackageAstrologer,
 } = require("../controllers/admin/marriagePackageAstrologer/marriagePackageAstrologer");
+const {
+  createLovePackage,
+  getAllLovePackages,
+  getLovePackage,
+  updateLovePackage,
+  deleteLovePackage,
+} = require("../controllers/admin/lovePackage/lovePackage");
+const {
+  createLoveSchedule,
+  getAllLoveSchedules,
+  getLoveSchedule,
+  updateLoveSchedule,
+  deleteLoveSchedule,
+} = require("../controllers/admin/loveSchedule/loveSchedule");
+const {
+  getAllLoveRequests,
+  getLoveRequestDetails,
+  selectSlotForLoveRequest,
+  resetSlotForLoveRequest,
+} = require("../controllers/admin/loveRequest/loveRequest");
 
 const router = express.Router();
 
@@ -654,5 +674,53 @@ router
   .get(getMarriagePackageAstrologer)
   .patch(updateMarriagePackageAstrologer)
   .delete(deleteMarriagePackageAstrologer);
+
+//love package
+router
+  .route("/lovePackage")
+  .post(
+    fileUploader(
+      [
+        { name: "thumbImage", maxCount: 1 },
+        { name: "image", maxCount: 1 },
+      ],
+      "LovePackage"
+    ),
+    createLovePackage
+  )
+  .get(getAllLovePackages);
+
+router
+  .route("/lovePackage/:id")
+  .get(getLovePackage)
+  .patch(
+    fileUploader(
+      [
+        { name: "thumbImage", maxCount: 1 },
+        { name: "image", maxCount: 1 },
+      ],
+      "LovePackage"
+    ),
+    updateLovePackage
+  )
+  .delete(deleteLovePackage);
+
+//love schedule
+router.route("/loveSchedule").post(createLoveSchedule).get(getAllLoveSchedules);
+
+router
+  .route("/loveSchedule/:id")
+  .get(getLoveSchedule)
+  .patch(updateLoveSchedule)
+  .delete(deleteLoveSchedule);
+
+//love request
+router.route("/loveRequest").get(getAllLoveRequests);
+
+router.route("/loveRequest/:id").get(getLoveRequestDetails);
+
+router.post("/bookloveSlot", selectSlotForLoveRequest);
+
+router.post("/rescheduleloveSlot", resetSlotForLoveRequest);
 
 module.exports = router;

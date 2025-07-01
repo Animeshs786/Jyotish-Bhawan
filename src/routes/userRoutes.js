@@ -164,7 +164,32 @@ const {
   getAllMarriageTransactions,
   createMarriageTransaction,
 } = require("../controllers/user/marriageTransaction/marriageTransaction");
-const { createMarriageRequest } = require("../controllers/user/marriageRequest/marriageRequest");
+const {
+  createMarriageRequest,
+} = require("../controllers/user/marriageRequest/marriageRequest");
+const {
+  getAllLovePackages,
+  getLovePackage,
+  checkLoveSubscription,
+} = require("../controllers/user/lovePackage/lovePackage");
+const {
+  createLoveMember,
+  getAllLoveMembers,
+  getLoveMember,
+  updateLoveMember,
+  deleteLoveMember,
+} = require("../controllers/user/loveMember/loveMember");
+const {
+  getAllLoveSchedules,
+} = require("../controllers/user/loveSchedule/loveSchedule");
+const {
+  createLoveTransaction,
+  getAllLoveTransactions,
+  getLoveTransaction,
+} = require("../controllers/user/loveTransaction/loveTransaction");
+const {
+  createLoveRequest,
+} = require("../controllers/user/loveRequest/loveRequest");
 
 const router = express.Router();
 
@@ -396,15 +421,65 @@ router.get(
 );
 
 //marriage request
-router.post(
-  "/marriageRequest",
-  userAuthenticate,
-  createMarriageRequest
-);
+router.post("/marriageRequest", userAuthenticate, createMarriageRequest);
 
 router.post(
   "/marriageSubscription",
   userAuthenticate,
   checkMarriageSubscription
 );
+
+// love Package Routes
+router.get("/lovePackage", getAllLovePackages);
+router.get("/lovePackage/:id", getLovePackage);
+
+//love member
+router
+  .route("/loveMember")
+  .post(
+    userAuthenticate,
+    fileUploader(
+      [
+        { name: "yourImage", maxCount: 1 },
+        { name: "partnerImage", maxCount: 1 },
+      ],
+      "LoveMember"
+    ),
+    createLoveMember
+  )
+  .get(userAuthenticate, getAllLoveMembers);
+
+router
+  .route("/loveMember/:id")
+  .get(userAuthenticate, getLoveMember)
+  .patch(
+    userAuthenticate,
+    fileUploader(
+      [
+        { name: "yourImage", maxCount: 1 },
+        { name: "partnerImage", maxCount: 1 },
+      ],
+      "LoveMember"
+    ),
+    updateLoveMember
+  )
+  .delete(userAuthenticate, deleteLoveMember);
+
+//lvoe schedule
+
+router.get("/loveSchedule", getAllLoveSchedules);
+
+//love Transaction
+router
+  .route("/loveTransaction")
+  .post(userAuthenticate, createLoveTransaction)
+  .get(userAuthenticate, getAllLoveTransactions);
+
+router.get("/loveTransaction/:id", userAuthenticate, getLoveTransaction);
+
+//love request
+router.post("/loveRequest", userAuthenticate, createLoveRequest);
+
+router.post("/loveSubscription", userAuthenticate, checkLoveSubscription);
+
 module.exports = router;

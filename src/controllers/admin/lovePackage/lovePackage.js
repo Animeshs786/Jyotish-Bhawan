@@ -1,0 +1,266 @@
+const LovePackage = require("../../../models/lovePackage");
+const AppError = require("../../../utils/AppError");
+const catchAsync = require("../../../utils/catchAsync");
+const deleteOldFiles = require("../../../utils/deleteOldFiles");
+const pagination = require("../../../utils/pagination");
+
+exports.createLovePackage = catchAsync(async (req, res, next) => {
+  const {
+    name,
+    price,
+    sellPrice,
+    duration,
+    packageExpiry,
+    about,
+    feacture,
+    status,
+    rechargeAmount,
+  } = req.body;
+  let thumbImagePath;
+  let imagePath;
+
+  // Validate required fields
+  if (
+    !name ||
+    !price ||
+    !sellPrice ||
+    !duration ||
+    !packageExpiry ||
+    !req.files ||
+    !req.files.thumbImage ||
+    !req.files.image
+  ) {
+    return next(
+      new AppError(
+        "Name, price, sellPrice, duration, packageExpiry, thumbImage, and image are required",
+        400
+      )
+    );
+  }
+
+  const LovePackageData = {
+    name,
+    price,
+    sellPrice,
+    duration,
+    packageExpiry,
+    about,
+    feacture: feacture
+      ? Array.isArray(feacture)
+        ? feacture
+        : JSON.parse(feacture)
+      : [],
+    status: status !== undefined ? status : true,
+    rechargeAmount: rechargeAmount ? rechargeAmount : 0,
+  };
+
+  try {
+    // Handle thumbImage upload
+    const thumbImage = req.files.thumbImage[0];
+    const thumbImageUrl = `${thumbImage.destination}/${thumbImage.filename}`;
+    LovePackageData.thumbImage = thumbImageUrl;
+    thumbImagePath = thumbImageUrl;
+
+    // Handle image upload
+    const image = req.files.image[0];
+    const imageUrl = `${image.destination}/${image.filename}`;
+    LovePackageData.image = imageUrl;
+    imagePath = imageUrl;
+
+    const newLovePackage = await LovePackage.create(
+      LovePackageData
+    );
+
+    res.status(201).json({
+      status: true,
+      message: "Consultation package created successfully",
+      data: newLovePackage,
+    });
+  } catch (error) {
+    // Clean up uploaded images
+    if (thumbImagePath) {
+      await deleteOldFiles(thumbImagePath).catch((err) => {
+        console.error("Failed to delete thumbImage:", err);
+      });
+    }
+    if (imagePath) {
+      await deleteOldFiles(imagePath).catch((err) => {
+        console.error("Failed to delete image:", err);
+      });
+    }
+    return next(error);
+  }
+});
+
+exports.getAllLovePackages = catchAsync(async (req, res, next) => {
+  const { search, page: currentPage, limit: currentLimit } = req.query;
+
+  let query = {};
+
+  if (search) {
+    query.$or = [
+      { name: { $regex: search, $options: "i" } },
+      { about: { $regex: search, $options: "i" } },
+    ];
+  }
+
+  const { limit, skip, totalResult, totalPage } = await pagination(
+    currentPage,
+    currentLimit,
+    LovePackage,
+    null,
+    query
+  );
+
+  const LovePackages = await LovePackage.find(query)
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+
+  res.status(200).json({
+    status: true,
+    totalResult,
+    totalPage,
+    message: "Consultation packages fetched successfully",
+    data: LovePackages,
+  });
+});
+
+exports.getLovePackage = catchAsync(async (req, res, next) => {
+  const LovePackage = await LovePackage.findById(req.params.id);
+
+  if (!LovePackage) {
+    return next(new AppError("Consultation package not found", 404));
+  }
+
+  res.status(200).json({
+    status: true,
+    message: "Consultation package fetched successfully",
+    data: LovePackage,
+  });
+});
+
+exports.updateLovePackage = catchAsync(async (req, res, next) => {
+  const {
+    name,
+    price,
+    sellPrice,
+    duration,
+    packageExpiry,
+    about,
+    feacture,
+    status,
+    rechargeAmount,
+  } = req.body;
+  let thumbImagePath;
+  let imagePath;
+
+  const LovePackage = await LovePackage.findById(req.params.id);
+
+  if (!LovePackage) {
+    return next(new AppError("Consultation package not found", 404));
+  }
+
+  const LovePackageData = {};
+
+  if (name) LovePackageData.name = name;
+  if (price !== undefined) LovePackageData.price = price;
+  if (sellPrice !== undefined) LovePackageData.sellPrice = sellPrice;
+  if (duration !== undefined) LovePackageData.duration = duration;
+  if (packageExpiry !== undefined)
+    LovePackageData.packageExpiry = packageExpiry;
+  if (about) LovePackageData.about = about;
+  if (rechargeAmount !== undefined)
+    LovePackageData.rechargeAmount = rechargeAmount;
+  if (feacture) {
+    LovePackageData.feacture = Array.isArray(feacture)
+      ? feacture
+      : JSON.parse(feacture);
+  }
+  if (status !== undefined) LovePackageData.status = status;
+
+  try {
+    // Handle thumbImage upload
+    if (req.files && req.files.thumbImage) {
+      const thumbImage = req.files.thumbImage[0];
+      const thumbImageUrl = `${thumbImage.destination}/${thumbImage.filename}`;
+      LovePackageData.thumbImage = thumbImageUrl;
+      thumbImagePath = thumbImageUrl;
+
+      // Delete old thumbImage if exists
+      if (LovePackage.thumbImage) {
+        await deleteOldFiles(LovePackage.thumbImage).catch((err) => {
+          console.error("Failed to delete old thumbImage:", err);
+        });
+      }
+    }
+
+    // Handle image upload
+    if (req.files && req.files.image) {
+      const image = req.files.image[0];
+      const imageUrl = `${image.destination}/${image.filename}`;
+      LovePackageData.image = imageUrl;
+      imagePath = imageUrl;
+
+      // Delete old image if exists
+      if (LovePackage.image) {
+        await deleteOldFiles(LovePackage.image).catch((err) => {
+          console.error("Failed to delete old image:", err);
+        });
+      }
+    }
+
+    const updatedLovePackage = await LovePackage.findByIdAndUpdate(
+      req.params.id,
+      LovePackageData,
+      { new: true, runValidators: true }
+    );
+
+    res.status(200).json({
+      status: true,
+      message: "Consultation package updated successfully",
+      data: updatedLovePackage,
+    });
+  } catch (error) {
+    // Clean up uploaded images
+    if (thumbImagePath) {
+      await deleteOldFiles(thumbImagePath).catch((err) => {
+        console.error("Failed to delete thumbImage:", err);
+      });
+    }
+    if (imagePath) {
+      await deleteOldFiles(imagePath).catch((err) => {
+        console.error("Failed to delete image:", err);
+      });
+    }
+    return next(error);
+  }
+});
+
+exports.deleteLovePackage = catchAsync(async (req, res, next) => {
+  const LovePackage = await LovePackage.findById(req.params.id);
+
+  if (!LovePackage) {
+    return next(new AppError("Consultation package not found", 404));
+  }
+
+  // Delete associated images if exist
+  if (LovePackage.thumbImage) {
+    await deleteOldFiles(LovePackage.thumbImage).catch((err) => {
+      console.error("Failed to delete thumbImage:", err);
+    });
+  }
+  if (LovePackage.image) {
+    await deleteOldFiles(LovePackage.image).catch((err) => {
+      console.error("Failed to delete image:", err);
+    });
+  }
+
+  await LovePackage.findByIdAndDelete(req.params.id);
+
+  res.status(200).json({
+    status: true,
+    message: "Consultation package deleted successfully",
+    data: null,
+  });
+});
