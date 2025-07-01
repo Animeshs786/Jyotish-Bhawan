@@ -175,7 +175,12 @@ exports.getAllConsultationTransactions = catchAsync(async (req, res, next) => {
 
   const transactions = await ConsultationTransaction.find(query)
     .populate("consultationPackage", "name duration sellPrice")
-    .populate("astrologer")
+    .populate({
+      path: "astrologer",
+      populate: {
+        path: "speciality", // Corrected: 'path' instead of 'paths'
+      },
+    })
     .populate("user")
     .sort({ createdAt: -1 })
     .skip(skip)

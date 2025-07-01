@@ -18,7 +18,7 @@ exports.createConsultationRequest = catchAsync(async (req, res, next) => {
     astrologer,
     astrologerSchedule,
     consoutationTransaction,
-    type = "chat",
+    type = "chat",//call,video,chat
   } = req.body;
   const userId = req.user._id; // From protect middleware
 

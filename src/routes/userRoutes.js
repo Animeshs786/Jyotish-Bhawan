@@ -57,6 +57,7 @@ const {
   getTomorrowHoroscope,
   getYesterdayHoroscope,
   getMonthlyHoroscope,
+  getPanchangDetails,
 } = require("../controllers/user/horoscope/horoscope");
 const {
   getAllChamberPackages,
@@ -288,6 +289,7 @@ router.post("/yesterdayHoroscope", getYesterdayHoroscope);
 router.post("/monthlyHoroscope", getMonthlyHoroscope);
 router.post("/kundli", getKundliDetails);
 router.post("/matchKundli", matchKundli);
+router.post("/panchang", getPanchangDetails);
 
 //product category
 router.get("/productCategory", getAllProductCategories);
